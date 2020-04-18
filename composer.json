@@ -16,6 +16,7 @@
         "php": "^7.2",
         "symfony/framework-bundle": "^4.0",
         "symfony/orm-pack": "dev-master",
+        "sensio/framework-extra-bundle": "^5.5",
         "ext-json": "*"
     },
     "require-dev": {

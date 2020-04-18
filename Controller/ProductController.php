@@ -1,9 +1,9 @@
 <?php
 
-namespace KrzysztofNikiel\RecruitmentTask\Controller;
+namespace KrzysztofNikiel\RecruitmentTaskBundle\Controller;
 
-use KrzysztofNikiel\RecruitmentTask\Entity\Product;
-use KrzysztofNikiel\RecruitmentTask\Repository\ProductRepository;
+use KrzysztofNikiel\RecruitmentTaskBundle\Entity\Product;
+use KrzysztofNikiel\RecruitmentTaskBundle\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;

@@ -1,6 +1,6 @@
 <?php
 
-namespace KrzysztofNikiel\RecruitmentTask\Repository;
+namespace KrzysztofNikiel\RecruitmentTaskBundle\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;

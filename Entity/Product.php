@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace KrzysztofNikiel\RecruitmentTask\Entity;
+namespace KrzysztofNikiel\RecruitmentTaskBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
