@@ -1,7 +1,7 @@
 {
     "name": "krzysztofnikiel/recruitment-task",
     "type": "symfony-bundle",
-    "description": "Recrutation task for Blue Services",
+    "description": "Recruitment task for Blue Services",
     "keywords": [],
     "homepage": "https://github.com/krzysztofnikiel/recruitment-task",
     "license": "MIT",
@@ -13,7 +13,10 @@
         }
     ],
     "require": {
-        "php": "^7.2"
+        "php": "^7.2",
+        "symfony/framework-bundle": "^4.0",
+        "symfony/orm-pack": "dev-master",
+        "ext-json": "*"
     },
     "require-dev": {
     },
