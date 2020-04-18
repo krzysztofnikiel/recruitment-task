@@ -1,0 +1,23 @@
+{
+    "name": "krzysztofnikiel/recruitment-task",
+    "type": "symfony-bundle",
+    "description": "Recrutation task for Blue Services",
+    "keywords": [],
+    "homepage": "https://github.com/krzysztofnikiel/recruitment-task",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Krzysztof Nikiel",
+            "email": "emctrakers@gmail.com",
+            "homepage": "https://github.com/krzysztofnikiel"
+        }
+    ],
+    "require": {
+        "php": "^7.2"
+    },
+    "require-dev": {
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+   }
+}
