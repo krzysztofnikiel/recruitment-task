@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Entity
  * @ORM\Table(name="products")
  * @ORM\HasLifecycleCallbacks()
- * @ORM\Entity(repositoryClass="KrzysztofNikiel\RecruitmentTask\Repository\ProductRepository")
+ * @ORM\Entity(repositoryClass="KrzysztofNikiel\RecruitmentTaskBundle\Repository\ProductRepository")
  */
 class Product implements \JsonSerializable
 {

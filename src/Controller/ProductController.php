@@ -1,6 +1,6 @@
 <?php
 
-namespace KrzysztofNikiel\RecruitmentTaskBundle\Controller;
+namespace KrzysztofNikiel\Bundle\RecruitmentTaskBundle\Controller;
 
 use KrzysztofNikiel\RecruitmentTaskBundle\Entity\Product;
 use KrzysztofNikiel\RecruitmentTaskBundle\Repository\ProductRepository;
@@ -13,19 +13,19 @@ use Symfony\Component\Routing\Annotation\Route;
 /**
  * Class ProductController
  * @package KrzysztofNikiel\RecruitmentTask\Controller\ProductController
- * @Route("/api", name="Product_api")
+ * @Route("/api", name="product_api")
  */
 class ProductController extends AbstractController
 {
     /**
-     * @param ProductRepository $ProductRepository
+     * @param ProductRepository $productRepository
      * @return JsonResponse
      * @Route("/products", name="products", methods={"GET"})
      */
-    public function getProducts(ProductRepository $ProductRepository)
+    public function getProducts()
     {
-        $data = $ProductRepository->findAll();
-        return $this->response($data);
+        $repository = $this->getDoctrine()->getRepository(Product::class);
+        return $this->response($repository->findAll());
     }
 
     /**
@@ -174,7 +174,7 @@ class ProductController extends AbstractController
      * @param array $headers
      * @return JsonResponse
      */
-    public function response($data, $status = 200, $headers = [])
+    private function response($data, $status = 200, $headers = []): JsonResponse
     {
         return new JsonResponse($data, $status, $headers);
     }
