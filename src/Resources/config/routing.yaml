@@ -1,3 +1,0 @@
-products:
-    resource: ../../src/Controller/
-    type: annotation
