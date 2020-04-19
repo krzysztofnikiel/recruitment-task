@@ -1,7 +1,7 @@
 services:
     KrzysztofNikiel\Bundle\RecruitmentTaskBundle\Controller\ProductController:
         autowire: true
-        tags: ['controller.service_arguments']
+        tags: ['controller.service_arguments', '@doctrine.repository_service']
 
     KrzysztofNikiel\Bundle\RecruitmentTaskBundle\Repository\ProductRepository:
         autowire: true
