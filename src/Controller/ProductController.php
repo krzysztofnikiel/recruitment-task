@@ -18,13 +18,13 @@ class ProductController extends AbstractController
     private const REQUIREMENTS = ProductRepository::IN_STOCK . '|' . ProductRepository::OUT_STOCK;
 
     /**
-     * @param ProductRepository $productRepository
+     * @param string $type
      * @return JsonResponse
      * @Route("/products/{type}", name="products", methods={"GET"}, defaults={"type"="in-stock"}, requirements={
      *     "type"=self::REQUIREMENTS;
      * })
      */
-    public function getProductsByType($type)
+    public function getProductsByStockType(string $type): JsonResponse
     {
         /** @var ProductRepository $repository */
         $repository = $this->getDoctrine()->getRepository(Product::class);
