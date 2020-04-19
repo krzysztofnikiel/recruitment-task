@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace KrzysztofNikiel\RecruitmentTaskBundle\Entity;
+namespace KrzysztofNikiel\Bundle\RecruitmentTaskBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Entity
  * @ORM\Table(name="products")
  * @ORM\HasLifecycleCallbacks()
- * @ORM\Entity(repositoryClass="KrzysztofNikiel\RecruitmentTaskBundle\Repository\ProductRepository")
+ * @ORM\Entity(repositoryClass="KrzysztofNikiel\Bundle\RecruitmentTaskBundle\Repository\ProductRepository")
  */
 class Product implements \JsonSerializable
 {
@@ -29,7 +29,7 @@ class Product implements \JsonSerializable
 
     /**
      * @var int
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer", options={"default" : 0})
      */
     private $amount;
 

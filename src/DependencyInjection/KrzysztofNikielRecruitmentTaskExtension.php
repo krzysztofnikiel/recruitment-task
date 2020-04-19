@@ -1,12 +1,12 @@
 <?php
-namespace KrzysztofNikiel\Bundle\RecruitmentTaskBundl\DependencyInjection;
+namespace KrzysztofNikiel\Bundle\RecruitmentTaskBundle\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
-class KrzysztofNikielRecruitmentTaskBundleExtension extends Extension
+class KrzysztofNikielRecruitmentTaskExtension extends Extension
 {
 
     /**
@@ -16,7 +16,7 @@ class KrzysztofNikielRecruitmentTaskBundleExtension extends Extension
      */
     public function load(array $configs, ContainerBuilder $container)
     {
-        $loader = new XmlFileLoader($container, new FileLocator(dirname(__DIR__).'/Resources/config'));
-        $loader->load('services.yaml');
+        $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+        $data = $loader->load('services.yaml');
     }
 }

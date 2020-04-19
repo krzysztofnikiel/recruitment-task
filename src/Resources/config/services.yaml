@@ -1,7 +1,9 @@
-parameters:
-
 services:
-    KrzysztofNikiel\Bundle\RecruitmentTaskBundle\Controller\:
-        resource: '../../src/Controller'
+    KrzysztofNikiel\Bundle\RecruitmentTaskBundle\Controller\ProductController:
+        autowire: true
         tags: ['controller.service_arguments']
+
+    KrzysztofNikiel\Bundle\RecruitmentTaskBundle\Repository\ProductRepository:
+        autowire: true
+        tags: ['doctrine.repository_service']
 
