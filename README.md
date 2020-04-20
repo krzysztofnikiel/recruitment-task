@@ -36,6 +36,9 @@ php bin/console make:migration
 php bin/console doctrine:migrations:migrate
 ```
 Example
+
+Change url http://localhost/bs-task/public/ to your own host 
+
 - Get product In Stock
 ```
 curl -X GET -v http://localhost/bs-task/public/index.php/api/products
