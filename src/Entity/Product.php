@@ -12,7 +12,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\HasLifecycleCallbacks()
  * @ORM\Entity(repositoryClass="KrzysztofNikiel\Bundle\RecruitmentTaskBundle\Repository\ProductRepository")
  */
-class Product implements \JsonSerializable
+class Product
 {
     /**
      * @var int
@@ -58,7 +58,7 @@ class Product implements \JsonSerializable
      * @param int $amount
      * @return Product
      */
-    public function setAmount($amount): Product
+    public function setAmount(int $amount): Product
     {
         $this->amount = $amount;
         return $this;
@@ -93,12 +93,12 @@ class Product implements \JsonSerializable
     /**
      * @return array
      */
-    public function jsonSerialize(): array
+    public function toArray(): array
     {
         return [
-            "id" => $this->id,
-            "name" => $this->name,
-            "amount" => $this->amount
+            'id' => $this->id,
+            'name' => $this->name,
+            'amount' => $this->amount
         ];
     }
 }

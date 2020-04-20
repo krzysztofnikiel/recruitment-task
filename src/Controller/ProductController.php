@@ -4,14 +4,15 @@ declare(strict_types=1);
 namespace KrzysztofNikiel\Bundle\RecruitmentTaskBundle\Controller;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\ConnectionException as ConnectionExceptionAlias;
 use KrzysztofNikiel\Bundle\RecruitmentTaskBundle\Entity\Product;
 use KrzysztofNikiel\Bundle\RecruitmentTaskBundle\Repository\ProductRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validation;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * Class ProductController
@@ -45,13 +46,11 @@ class ProductController extends AbstractController
      */
     public function addProduct(Request $request): JsonResponse
     {
-        $request = $this->transformJsonBody($request);
-
         $product = new Product();
         $product->setName($request->get('name'));
-        $product->setAmount($request->get('amount'));
+        $product->setAmount((int)$request->get('amount'));
 
-        /** @var Validation $validator */
+        /** @var ValidatorInterface $validator */
         $validator = Validation::createValidatorBuilder()
             ->enableAnnotationMapping()
             ->getValidator();
@@ -93,6 +92,7 @@ class ProductController extends AbstractController
         return $this->response([
             'success' => true,
             'message' => "Product added successfully",
+            'product' => $product->toArray()
         ]);
     }
 
@@ -112,6 +112,7 @@ class ProductController extends AbstractController
      * @param int $id
      * @return JsonResponse
      * @Route("/product/{id}", name="products_patch", methods={"patch"}, requirements={"id"="\d+"})
+     * @throws ConnectionExceptionAlias
      */
     public function updateProduct(Request $request, $id): JsonResponse
     {
@@ -129,8 +130,6 @@ class ProductController extends AbstractController
         }
 
         $entityManager = $this->getDoctrine()->getManager();
-        $request = $this->transformJsonBody($request);
-
         if ($request->get('name') === null && $request->get('amount') === null) {
             return $this->response(
                 [
@@ -145,8 +144,10 @@ class ProductController extends AbstractController
             $product->setAmount((int)$request->get('amount'));
         }
 
-        /** @var Validation $validator */
-        $validator = Validation::createValidator();
+        /** @var ValidatorInterface $validator */
+        $validator = Validation::createValidatorBuilder()
+            ->enableAnnotationMapping()
+            ->getValidator();
         $violations = $validator->validate($product);
 
         if (count($violations) > 0) {
@@ -183,13 +184,15 @@ class ProductController extends AbstractController
             [
                 'success' => true,
                 'message' => "Product updated successfully",
-            ],
+                'product' => $product->toArray()
+            ]
         );
     }
 
     /**
      * @param int $id
      * @return JsonResponse
+     * @throws ConnectionExceptionAlias
      * @Route("/product/{id}", name="product_delete", methods={"DELETE"}, requirements={"id"="\d+"})
      */
     public function deleteProduct($id)
@@ -229,7 +232,7 @@ class ProductController extends AbstractController
             [
                 'success' => true,
                 'message' => "Product deleted successfully",
-            ],
+            ]
         );
     }
 
@@ -245,23 +248,6 @@ class ProductController extends AbstractController
     private function response($data, $status = 200, $headers = []): JsonResponse
     {
         return new JsonResponse($data, $status, $headers);
-    }
-
-    /**
-     * @param Request $request
-     * @return Request
-     */
-    private function transformJsonBody(\Symfony\Component\HttpFoundation\Request $request): Request
-    {
-        $data = json_decode($request->getContent(), true);
-
-        if ($data === null) {
-            return $request;
-        }
-
-        $request->request->replace($data);
-
-        return $request;
     }
 
 }
