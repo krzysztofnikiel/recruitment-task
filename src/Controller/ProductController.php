@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace KrzysztofNikiel\Bundle\RecruitmentTaskBundle\Controller;
 
+use Doctrine\DBAL\Connection;
 use KrzysztofNikiel\Bundle\RecruitmentTaskBundle\Entity\Product;
 use KrzysztofNikiel\Bundle\RecruitmentTaskBundle\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -10,7 +11,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validation;
 
 /**
@@ -24,49 +24,63 @@ class ProductController extends AbstractController
 
     /**
      * @param string $type
-     * @param ProductRepository $productRepository
      *
      * @return JsonResponse
      * @Route("/products/{type}", name="products", methods={"GET"}, defaults={"type"="in-stock"}, requirements={
      *     "type"=ProductController::REQUIREMENTS
      * })
      */
-    public function getProductsByStockType($type, $productRepository): JsonResponse
+    public function getProductsByStockType($type): JsonResponse
     {
+        /** @var ProductRepository $productRepository */
+        $productRepository = $this->getDoctrine()->getRepository(Product::class);
         return $this->response($productRepository->findProductByStock($type));
     }
 
     /**
      * @param Request $request
-     * @param ProductRepository $ProductRepository
      * @return JsonResponse
      * @throws \Exception
-     * @Route("/products", name="products_add", methods={"POST"})
+     * @Route("/product", name="products_add", methods={"POST"})
      */
-    public function addProduct(Request $request, ProductRepository $productRepository): JsonResponse
+    public function addProduct(Request $request): JsonResponse
     {
         $request = $this->transformJsonBody($request);
 
-        if ($request->get('name') === null && $request->get('amount') === null) {
+        $product = new Product();
+        $product->setName($request->get('name'));
+        $product->setAmount($request->get('amount'));
+
+        /** @var Validation $validator */
+        $validator = Validation::createValidatorBuilder()
+            ->enableAnnotationMapping()
+            ->getValidator();
+        $violations = $validator->validate($product);
+
+        if (count($violations) > 0) {
+            foreach ($violations as $violation) {
+                $message[$violation->getPropertyPath()] = $violation->getMessage();
+            }
+
             return $this->response(
                 [
                     'success' => false,
-                    'message' => "Missing param",
+                    'message' => $message,
                 ],
                 400
             );
         }
+
         $entityManager = $this->getDoctrine()->getManager();
-        $entityManager->getConnection()->beginTransaction();
+        /** @var Connection $connection */
+        $connection = $entityManager->getConnection();
+        $connection->beginTransaction();
         try {
-            $product = new Product();
-            $product->setName($request->get('name'));
-            $product->setAmount($request->get('amount'));
             $entityManager->persist($product);
             $entityManager->flush();
-            $entityManager->getConnection()->commit();
+            $connection->commit();
         } catch (\Exception $e) {
-            $entityManager->getConnection()->rollBack();
+            $connection->rollBack();
             return $this->response(
                 [
                     'success' => false,
@@ -81,39 +95,29 @@ class ProductController extends AbstractController
             'message' => "Product added successfully",
         ]);
     }
-//
-//
-//    /**
-//     * @param ProductRepository $ProductRepository
-//     * @param $id
-//     * @return JsonResponse
-//     * @Route("/Products/{id}", name="Products_get", methods={"GET"})
-//     */
-//    public function getProduct(ProductRepository $ProductRepository, $id)
-//    {
-//        $Product = $ProductRepository->find($id);
-//
-//        if (!$Product) {
-//            $data = [
-//                'status' => 404,
-//                'errors' => "Product not found",
-//            ];
-//            return $this->response($data, 404);
-//        }
-//        return $this->response($Product);
-//    }
-//
+
+    /**
+     * @return JsonResponse
+     * @Route("/products-more-than-five", name="products_get_more_than_five", methods={"GET"})
+     */
+    public function getProductByAmountMoreThanFive(): JsonResponse
+    {
+        /** @var ProductRepository $productRepository */
+        $productRepository = $this->getDoctrine()->getRepository(Product::class);
+        return $this->response($productRepository->findProductMoreThanAmount(5));
+    }
+
     /**
      * @param Request $request
      * @param int $id
      * @return JsonResponse
-     * @Route("/product/{id}", name="products_patch", methods={"patch"})
+     * @Route("/product/{id}", name="products_patch", methods={"patch"}, requirements={"id"="\d+"})
      */
     public function updateProduct(Request $request, $id): JsonResponse
     {
-        /** @var ProductRepository $repository */
-        $repository = $this->getDoctrine()->getRepository(Product::class);
-        $product = $repository->findOneBy(['id' => $id]);
+        /** @var ProductRepository $productRepository */
+        $productRepository = $this->getDoctrine()->getRepository(Product::class);
+        $product = $productRepository->findOneBy(['id' => $id]);
         if ($product === null) {
             return $this->response(
                 [
@@ -125,22 +129,7 @@ class ProductController extends AbstractController
         }
 
         $entityManager = $this->getDoctrine()->getManager();
-        $entityManager->getConnection()->beginTransaction();
         $request = $this->transformJsonBody($request);
-
-        /** @var Validation $validator */
-        $validator = Validation::createValidator();
-        $validator->validate(
-            [
-                'name' => $request->get('name'),
-                'amount' => $request->get('amount')
-            ],
-            new Assert\Collection([
-                'name' => new Assert\Length(['max' => 100]),
-                'amount' => new Assert\Type(['type' => 'integer']),
-            ])
-        );
-
 
         if ($request->get('name') === null && $request->get('amount') === null) {
             return $this->response(
@@ -151,16 +140,37 @@ class ProductController extends AbstractController
                 400
             );
         }
-        try {
-            $product->setName($request->get('name') ?: $product->getName());
-            if ($request->get('amount') !== null) {
-                $product->setAmount($request->get('amount'));
+        $product->setName($request->get('name') ?: $product->getName());
+        if ($request->get('amount') !== null) {
+            $product->setAmount((int)$request->get('amount'));
+        }
+
+        /** @var Validation $validator */
+        $validator = Validation::createValidator();
+        $violations = $validator->validate($product);
+
+        if (count($violations) > 0) {
+            foreach ($violations as $violation) {
+                $message[$violation->getPropertyPath()] = $violation->getMessage();
             }
+
+            return $this->response(
+                [
+                    'success' => false,
+                    'message' => $message,
+                ],
+                400
+            );
+        }
+        /** @var Connection $connection */
+        $connection = $entityManager->getConnection();
+        $connection->beginTransaction();
+        try {
             $entityManager->flush();
-            $entityManager->getConnection()->commit();
+            $connection->commit();
 
         } catch (\Exception $e) {
-            $entityManager->getConnection()->rollBack();
+            $connection->rollBack();
             return $this->response(
                 [
                     'success' => false,
@@ -197,13 +207,15 @@ class ProductController extends AbstractController
             );
         }
         $entityManager = $this->getDoctrine()->getManager();
-        $entityManager->getConnection()->beginTransaction();
+        /** @var Connection $connection */
+        $connection = $entityManager->getConnection();
+        $connection->beginTransaction();
         try {
             $entityManager->remove($product);
             $entityManager->flush();
-            $entityManager->getConnection()->commit();
+            $connection->commit();
         } catch (\Exception $exception) {
-            $entityManager->getConnection()->rollBack();
+            $connection->rollBack();
             return $this->response(
                 [
                     'success' => false,

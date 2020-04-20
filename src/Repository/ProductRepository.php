@@ -40,8 +40,23 @@ class ProductRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+    /**
+     * @return array
+     */
+    public function findProductMoreThanAmount($amount): array
+    {
+        $qb = $this->getEntityManager()->createQueryBuilder();
+
+        return $qb->select(['p'])
+            ->from(Product::class, 'p')
+            ->where($qb->expr()->gt('p.amount', $amount))
+            ->orderBy('p.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 
     /**
+     * @param QueryBuilder $qb
      * @param string $type
      * @return Comparison
      */
