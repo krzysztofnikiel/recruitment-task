@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace KrzysztofNikiel\Bundle\RecruitmentTaskBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity
@@ -24,14 +23,12 @@ class Product implements \JsonSerializable
 
     /**
      * @var string
-     * @ORM\Column(type="string", length=100)
      * @Assert\Length(min = 2, max = 100)
      */
     private $name;
 
     /**
      * @var int
-     * @Assert\Type(type="integer")
      * @ORM\Column(type="integer", options={"default" : 0})
      */
     private $amount;

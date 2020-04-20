@@ -13,7 +13,7 @@
         }
     ],
     "require": {
-        "php": "^7.2",
+        "php": "^7.3.12",
         "symfony/orm-pack": "*",
         "sensio/framework-extra-bundle": "^5.5",
         "ext-json": "*",

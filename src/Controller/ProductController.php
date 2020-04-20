@@ -11,6 +11,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotNull;
+use Symfony\Component\Validator\Constraints\Type;
+use Symfony\Component\Validator\ConstraintViolationListInterface;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -47,26 +51,15 @@ class ProductController extends AbstractController
     public function addProduct(Request $request): JsonResponse
     {
         $request = $this->transformJsonBody($request);
-
-        $product = new Product();
-        $product->setName($request->get('name'));
-        $product->setAmount((int)$request->get('amount'));
-
-        /** @var ValidatorInterface $validator */
-        $validator = Validation::createValidatorBuilder()
-            ->enableAnnotationMapping()
-            ->getValidator();
-        $violations = $validator->validate($product);
+        $validator = Validation::createValidatorBuilder()->getValidator();
+        $violations = $this->validateRequestData($request);
 
         if (count($violations) > 0) {
-            foreach ($violations as $violation) {
-                $message[$violation->getPropertyPath()] = $violation->getMessage();
-            }
-
             return $this->response(
                 [
                     'success' => false,
-                    'message' => $message,
+                    'message' => 'Validation errors',
+                    'validation_errors' => $this->getValidationErrors($violations)
                 ],
                 400
             );
@@ -77,6 +70,10 @@ class ProductController extends AbstractController
         $connection = $entityManager->getConnection();
         $connection->beginTransaction();
         try {
+            $product = new Product();
+            $product->setName($request->get('name'));
+            $product->setAmount((int)$request->get('amount'));
+
             $entityManager->persist($product);
             $entityManager->flush();
             $connection->commit();
@@ -132,35 +129,13 @@ class ProductController extends AbstractController
         }
 
         $request = $this->transformJsonBody($request);
-        if ($request->get('name') === null && $request->get('amount') === null) {
-            return $this->response(
-                [
-                    'success' => false,
-                    'message' => "Missing param",
-                ],
-                400
-            );
-        }
-        $product->setName($request->get('name') ?: $product->getName());
-        if ($request->get('amount') !== null) {
-            $product->setAmount((int)$request->get('amount'));
-        }
-
-        /** @var ValidatorInterface $validator */
-        $validator = Validation::createValidatorBuilder()
-            ->enableAnnotationMapping()
-            ->getValidator();
-        $violations = $validator->validate($product);
-
+        $violations = $this->validateRequestData($request);
         if (count($violations) > 0) {
-            foreach ($violations as $violation) {
-                $message[$violation->getPropertyPath()] = $violation->getMessage();
-            }
-
             return $this->response(
                 [
                     'success' => false,
-                    'message' => $message,
+                    'message' => 'Validation errors',
+                    'validation_errors' => $this->getValidationErrors($violations)
                 ],
                 400
             );
@@ -171,6 +146,11 @@ class ProductController extends AbstractController
         $connection = $entityManager->getConnection();
         $connection->beginTransaction();
         try {
+            $product->setName($request->get('name') ?: $product->getName());
+            if ($request->get('amount') !== null) {
+                $product->setAmount((int)$request->get('amount'));
+            }
+
             $entityManager->flush();
             $connection->commit();
 
@@ -253,11 +233,12 @@ class ProductController extends AbstractController
     {
         return new JsonResponse($data, $status, $headers);
     }
+
     /**
      * @param Request $request
      * @return Request
      */
-    protected function transformJsonBody(\Symfony\Component\HttpFoundation\Request $request)
+    private function transformJsonBody(\Symfony\Component\HttpFoundation\Request $request)
     {
         $data = json_decode($request->getContent(), true);
 
@@ -268,5 +249,39 @@ class ProductController extends AbstractController
         $request->request->replace($data);
 
         return $request;
+    }
+
+    /**
+     * @param Request $request
+     * @return ConstraintViolationListInterface
+     */
+    private function validateRequestData(Request $request): ConstraintViolationListInterface
+    {
+        /** @var ValidatorInterface $validator */
+        $validator = Validation::createValidatorBuilder()->getValidator();
+        return $validator->startContext()
+            ->atPath('name')->validate($request->get('name'), [
+                new NotNull(),
+                new Length(['min' => 2, 'max' => 100]),
+            ])
+            ->atPath('amount')->validate($request->get('amount'), [
+                new NotNull(),
+                new Type('integer')
+            ])
+            ->getViolations();
+    }
+
+    /**
+     * @param ConstraintViolationListInterface $violations
+     * @return array
+     */
+    private function getValidationErrors(ConstraintViolationListInterface $violations): array
+    {
+        $validationErrors = [];
+        foreach ($violations as $violation) {
+            $validationErrors[$violation->getPropertyPath()] = $violation->getMessage();
+        }
+
+        return $validationErrors;
     }
 }
