@@ -12,7 +12,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\HasLifecycleCallbacks()
  * @ORM\Entity(repositoryClass="KrzysztofNikiel\Bundle\RecruitmentTaskBundle\Repository\ProductRepository")
  */
-class Product
+class Product implements \JsonSerializable
 {
     /**
      * @var int
@@ -88,6 +88,14 @@ class Product
     public function getId(): int
     {
         return $this->id;
+    }
+
+    /**
+     * @return array
+     */
+    public function jsonSerialize(): array
+    {
+        return $this->toArray();
     }
 
     /**
