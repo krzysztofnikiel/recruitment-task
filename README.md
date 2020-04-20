@@ -4,6 +4,10 @@ KrzysztofNikielRecruitmentTaskBundle
 How to install:
 
 Step 1 Composer
+ - To access this packages in Composer, configure authentication globally on your machine:
+ ````
+composer config --global --auth http-basic.repo.packagist.com krzysztofnikiel b274359a55c57e573bd3dabf2b66fe5f5d4997621281d241dd6ee1a77505
+````
  - add to composer.json
 ```
 {
