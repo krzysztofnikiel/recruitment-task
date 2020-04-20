@@ -46,6 +46,8 @@ class ProductController extends AbstractController
      */
     public function addProduct(Request $request): JsonResponse
     {
+        $request = $this->transformJsonBody($request);
+
         $product = new Product();
         $product->setName($request->get('name'));
         $product->setAmount((int)$request->get('amount'));
@@ -129,7 +131,7 @@ class ProductController extends AbstractController
             );
         }
 
-        $entityManager = $this->getDoctrine()->getManager();
+        $request = $this->transformJsonBody($request);
         if ($request->get('name') === null && $request->get('amount') === null) {
             return $this->response(
                 [
@@ -163,6 +165,8 @@ class ProductController extends AbstractController
                 400
             );
         }
+
+        $entityManager = $this->getDoctrine()->getManager();
         /** @var Connection $connection */
         $connection = $entityManager->getConnection();
         $connection->beginTransaction();
@@ -249,5 +253,20 @@ class ProductController extends AbstractController
     {
         return new JsonResponse($data, $status, $headers);
     }
+    /**
+     * @param Request $request
+     * @return Request
+     */
+    protected function transformJsonBody(\Symfony\Component\HttpFoundation\Request $request)
+    {
+        $data = json_decode($request->getContent(), true);
 
+        if ($data === null) {
+            return $request;
+        }
+
+        $request->request->replace($data);
+
+        return $request;
+    }
 }
